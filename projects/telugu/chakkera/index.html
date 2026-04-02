@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>చక్కెర — పదపటం · pavansanthosh.in</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#faf6ef;font-family:'Noto Sans Telugu',serif}
+header{text-align:center;padding:22px 0 6px}
+h1{font-size:28px;font-weight:700;color:#1a0a00;letter-spacing:.5px}
+.subtitle{font-size:13px;color:#8a7060;margin-top:5px}
+.back-link{display:inline-block;margin:8px 0 0;font-size:13px;color:#b85c38;text-decoration:none}
+.back-link:hover{text-decoration:underline}
+.legend{display:flex;justify-content:center;gap:22px;padding:12px 0 4px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#333}
+.legend-swatch{width:38px;height:14px;border-radius:3px}
+.legend-note{font-size:11px;color:#999;text-align:center;padding:4px 0 10px}
+#map-wrap{display:flex;justify-content:center;padding:0 8px 24px}
+svg{max-width:880px;width:100%}
+.dp{stroke:#fff;stroke-width:.6;cursor:pointer;transition:opacity .12s}
+.dp:hover{opacity:.75;stroke:#111;stroke-width:1.8}
+.tgo{fill:none;stroke:rgba(20,8,0,.5);stroke-width:2.6;stroke-dasharray:8,4;pointer-events:none}
+#tt{position:fixed;display:none;z-index:999;pointer-events:none;background:rgba(12,4,0,.95);color:#fff;border-radius:10px;padding:14px 18px;max-width:290px;line-height:1.85;border:1px solid rgba(255,255,255,.1);font-family:'Noto Sans Telugu',serif}
+#tt .dn{font-size:15px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.15);padding-bottom:6px;margin-bottom:6px}
+#tt .tg{font-size:11px;opacity:.6}
+#tt .p1w{font-size:22px;font-weight:900;line-height:1.2}
+#tt .p1f{font-size:11px;opacity:.65;margin-top:1px;margin-bottom:6px}
+#tt .p2w{font-size:15px;font-weight:700;margin-top:4px}
+#tt .p2f{font-size:11px;opacity:.6;margin-top:1px;margin-bottom:4px}
+#tt .p3w{font-size:13px;font-weight:600;margin-top:4px;opacity:.85}
+#tt .p3f{font-size:11px;opacity:.55;margin-top:1px}
+#loading{text-align:center;padding:80px;font-size:15px;color:#8a7060}
+</style>
+</head>
+<body>
+<header>
+  <h1>చక్కెర — పదపటం</h1>
+  <p class="subtitle">ఆంధ్రప్రదేశ్ · తెలంగాణ — జిల్లాల వారీగా చక్కెరకు వాడే పదాలు</p>
+  <a href="/" class="back-link">← pavansanthosh.in కి వెళ్ళండి</a>
+</header>
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#1a6fc4"></div>పంచదార</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#c0392b"></div>చక్కెర</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#d4a017"></div>చీనీ / చీనా</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#1a9e6e"></div>తీపిరవ్వ</div>
+</div>
+<p class="legend-note">రంగు = ప్రాథమిక పదం · మిళితం = ద్వితీయ + తృతీయ పదాల ప్రభావం · బాష్పరేఖ = తెలంగాణ సరిహద్దు</p>
+<div id="map-wrap">
+  <div id="loading">మ్యాప్ లోడవుతోంది…</div>
+  <svg id="map" style="display:none"></svg>
+</div>
+<div id="tt"></div>
+<script>
+const BASE={'పంచదార':[26,111,196],'చక్కెర':[192,57,43],'చీనీ':[212,160,23],'చీనా':[212,160,23],'తీపిరవ్వ':[26,158,110]};
+const DD={'Adilabad':{p1:{w:'చక్కెర',f:[]},p2:null,p3:null},'Anantapur':{p1:{w:'చక్కెర',f:[]},p2:null,p3:null},'Chittoor':{p1:{w:'చక్కెర',f:['చక్కర','శెక్కిరి']},p2:{w:'పంచదార',f:[]},p3:null},'Cuddapah':{p1:{w:'చక్కెర',f:['చెక్కెర','చక్కర']},p2:null,p3:null},'East Godavari':{p1:{w:'పంచదార',f:['పందార','పణద్దార']},p2:{w:'చీనా',f:['సీనా']},p3:{w:'చక్కెర',f:['చక్కర','సెక్కెర','శర్కర']}},'Guntur':{p1:{w:'పంచదార',f:['పందార']},p2:null,p3:{w:'చక్కెర',f:['చెక్కెర']}},'Hyderabad':{p1:{w:'చక్కెర',f:['శక్కెర']},p2:{w:'తీపిరవ్వ',f:['తీరవ్వ']},p3:null},'Karimnagar':{p1:{w:'చక్కెర',f:[]},p2:null,p3:null},'Khammam':{p1:{w:'పంచదార',f:['పందార']},p2:{w:'చక్కెర',f:['చెక్కెర']},p3:null},'Krishna':{p1:{w:'పంచదార',f:['పంచధార']},p2:{w:'చక్కెర',f:[]},p3:null},'Kurnool':{p1:{w:'చక్కెర',f:['చెక్కరు','చెక్కెర']},p2:null,p3:null},'Mahbubnagar':{p1:{w:'చక్కెర',f:['సక్కెర']},p2:null,p3:null},'Medak':{p1:{w:'చక్కెర',f:[]},p2:null,p3:null},'Nalgonda':{p1:{w:'చక్కెర',f:['చెక్కెర','శక్కర']},p2:{w:'పంచదార',f:[]},p3:null},'Nellore':{p1:{w:'చక్కెర',f:['సక్కిరి','చక్కర']},p2:null,p3:null},'Nizamabad':{p1:{w:'చక్కెర',f:[]},p2:null,p3:null},'Prakasam':{p1:{w:'చక్కెర',f:['చెక్కర','శక్కర']},p2:{w:'పంచదార',f:[]},p3:null},'Rangareddi':{p1:{w:'చక్కెర',f:['చెక్కెర','చక్కర']},p2:null,p3:null},'Srikakulam':{p1:{w:'పంచదార',f:['పందార']},p2:{w:'చీనీ',f:[]},p3:null},'Vishakhapatnam':{p1:{w:'పంచదార',f:['పందార']},p2:{w:'తీపిరవ్వ',f:['తీరవ్వ']},p3:{w:'చక్కెర',f:['తెల్లపాకం']}},'Vizianagaram':{p1:{w:'పంచదార',f:[]},p2:null,p3:null},'Warangal':{p1:{w:'చక్కెర',f:[]},p2:null,p3:{w:'పంచదార',f:[]}},'West Godavari':{p1:{w:'పంచదార',f:['పందార','పణద్దార']},p2:{w:'చక్కెర',f:['చెక్కెర']},p3:null}};
+const TN={'Adilabad':'ఆదిలాబాద్','Anantapur':'అనంతపురం','Chittoor':'చిత్తూరు','Cuddapah':'కడప','East Godavari':'తూర్పు గోదావరి','Guntur':'గుంటూరు','Hyderabad':'హైదరాబాద్','Karimnagar':'కరీంనగర్','Khammam':'ఖమ్మం','Krishna':'కృష్ణా','Kurnool':'కర్నూలు','Mahbubnagar':'మహబూబ్ నగర్','Medak':'మెదక్','Nalgonda':'నల్గొండ','Nellore':'నెల్లూరు','Nizamabad':'నిజామాబాద్','Prakasam':'ప్రకాశం','Rangareddi':'రంగారెడ్డి','Srikakulam':'శ్రీకాకుళం','Vishakhapatnam':'విశాఖపట్నం','Vizianagaram':'విజయనగరం','Warangal':'వరంగల్','West Godavari':'పశ్చిమ గోదావరి'};
+const TG=new Set(['Adilabad','Karimnagar','Khammam','Hyderabad','Medak','Nizamabad','Nalgonda','Rangareddi','Warangal','Mahbubnagar']);
+function blend(n){const dd=DD[n];if(!dd)return'#aaa';const c1=BASE[dd.p1?.w]||[150,150,150],c2=dd.p2?(BASE[dd.p2.w]||c1):c1,c3=dd.p3?(BASE[dd.p3.w]||c1):c1;let r=c1[0],g=c1[1],b=c1[2];if(dd.p2){r=r*.72+c2[0]*.28;g=g*.72+c2[1]*.28;b=b*.72+c2[2]*.28;}if(dd.p3){r=r*.86+c3[0]*.14;g=g*.86+c3[1]*.14;b=b*.86+c3[2]*.14;}return'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';}
+const NS='http://www.w3.org/2000/svg';
+function tx(p,t,x,y,sz,wt,fill,op){if(!t)return;const e=document.createElementNS(NS,'text');e.setAttribute('x',x);e.setAttribute('y',y);e.setAttribute('text-anchor','middle');e.setAttribute('font-size',sz);e.setAttribute('font-weight',wt);e.setAttribute('fill',fill);e.setAttribute('opacity',op);e.setAttribute('pointer-events','none');e.setAttribute('font-family',"'Noto Sans Telugu',serif");e.textContent=t;p.appendChild(e);}
+function labels(el,cx,cy,name){const dd=DD[name];if(!dd)return;const p1f=(dd.p1?.f||[]).join(', '),p2f=(dd.p2?.f||[]).join(', '),p3f=(dd.p3?.f||[]).join(', ');let h=15+(p1f?10:0)+(dd.p2?(6+12+(p2f?9:0)):0)+(dd.p3?(5+11+(p3f?8:0)):0);let y=cy-h/2+13;tx(el,dd.p1.w,cx,y,13,700,'#fff',1);y+=15;if(p1f){tx(el,p1f,cx,y,7,400,'rgba(255,255,255,.72)',1);y+=10;}if(dd.p2){y+=5;tx(el,dd.p2.w,cx,y,10,700,'rgba(255,255,255,.9)',1);y+=12;if(p2f){tx(el,p2f,cx,y,7,400,'rgba(255,255,255,.62)',1);y+=9;}}if(dd.p3){y+=4;tx(el,dd.p3.w,cx,y,9,700,'rgba(255,255,255,.82)',1);y+=11;if(p3f){tx(el,p3f,cx,y,7,400,'rgba(255,255,255,.52)',1);}}}
+function tip(name){const dd=DD[name]||{},isTG=TG.has(name);let h='<div class="dn">'+(TN[name]||name);if(isTG)h+=' <span class="tg">తెలంగాణ</span>';h+='</div>';if(dd.p1){h+='<div class="p1w">'+dd.p1.w+'</div>';h+='<div class="p1f">'+(dd.p1.f?.length?'రూపాలు: '+dd.p1.f.join(' · '):'')+'</div>';}if(dd.p2){h+='<div class="p2w">'+dd.p2.w+'</div>';h+='<div class="p2f">'+(dd.p2.f?.length?'రూపాలు: '+dd.p2.f.join(' · '):'')+'</div>';}if(dd.p3){h+='<div class="p3w">'+dd.p3.w+'</div>';h+='<div class="p3f">'+(dd.p3.f?.length?'రూపాలు: '+dd.p3.f.join(' · '):'')+'</div>';}return h;}
+const W=880,H=920,svgEl=document.getElementById('map'),svg=d3.select('#map').attr('viewBox','0 0 '+W+' '+H),tt=document.getElementById('tt');
+fetch('https://raw.githubusercontent.com/geohacker/india/master/district/india_district.geojson').then(r=>r.json()).then(raw=>{
+  document.getElementById('loading').style.display='none';svgEl.style.display='block';
+  const ft=raw.features.filter(f=>f.properties.NAME_1==='Andhra Pradesh');
+  const proj=d3.geoMercator().fitExtent([[30,30],[W-20,H-30]],{type:'FeatureCollection',features:ft});
+  const path=d3.geoPath(proj);
+  svg.selectAll('.dp').data(ft).join('path').attr('class','dp').attr('d',path).attr('fill',d=>blend(d.properties.NAME_2))
+    .on('mousemove',(ev,d)=>{tt.innerHTML=tip(d.properties.NAME_2);tt.style.display='block';tt.style.left=(ev.clientX+16)+'px';tt.style.top=(ev.clientY-10)+'px';})
+    .on('mouseleave',()=>{tt.style.display='none';});
+  svg.selectAll('.tgo').data(ft.filter(f=>TG.has(f.properties.NAME_2))).join('path').attr('class','tgo').attr('d',path);
+  ft.forEach(f=>{const[cx,cy]=path.centroid(f);if(!isNaN(cx)&&!isNaN(cy))labels(svgEl,cx,cy,f.properties.NAME_2);});
+  tx(svgEl,'తెలంగాణ',148,68,15,600,'#1a0500',.3);tx(svgEl,'ఆంధ్రప్రదేశ్',615,775,15,600,'#1a0500',.3);
+}).catch(e=>{document.getElementById('loading').textContent='Error: '+e.message;});
+</script>
+</body>
+</html>
